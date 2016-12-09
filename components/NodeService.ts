@@ -22,18 +22,30 @@ export class ChainNode {
     _isFilled: boolean = false;
     _filledWith: number = NaN;
 
-    constructor(index: Point, nodeArray: Array<number> ) {
+    constructor(index: Point, chainSize: Object ) {
         this._index = index;
         if(index.x == 0) {
             this._relatedNodes.eastNode = index.x + 1; 
         }
-        if(index.x > 0 && index.x < nodeArray.length - 1) {
+        if(index.x > 0 && index.x < chainSize.d2 - 1) {
             this._relatedNodes.westNode = index.x - 1;
             this._relatedNodes.eastNode = index.x + 1;
         }
         if(index.x == nodeArray.length - 1) {
             this._relatedNodes.westNode = index.x - 1;
         }
+
+        if(index.y == 0) {
+            this._relatedNodes.southNode = index.y + 1;
+        }
+        if(index.y > 0 && index.y < nodeArray.length - 1) {
+            this._relatedNodes.northNode = index.y - 1;
+            this._relatedNodes.southNode = index.y + 1;
+        }
+        if(index.y == nodeArray.length - 1) {
+            this._relatedNodes.northNode = index.y - 1;
+        }
+
     }
 
     get relations() : RelatedNodes {

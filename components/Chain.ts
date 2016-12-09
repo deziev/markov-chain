@@ -14,8 +14,16 @@ export class Chain {
         for(let i = 0; i < rows; i++) {
             this._nodes[i] = [];
             for(let j = 0; j < chainLayout.length; j++) {
-                this._nodes[i][j] = new ChainNode( {x: j, y: i}, chainLayout);
-            }
+                this._nodes[i][j] = new ChainNode( 
+                    {
+                        "x": j, 
+                        "y": i
+                    }, 
+                    { 
+                        "d1": rows,
+                        "d2": chainLayout.length 
+                    });
+                }
         }
         for(let i = 0; i < itemSourcePoints.length; i++) {
             let destPoint = itemDestinationPoints[i];
@@ -58,7 +66,7 @@ export class Chain {
             let node = this.getNodeByPosition(nodePosition);
             // get all chield nodes
             node._relatedNodes
-            
+
         }
         //end loop
     }
