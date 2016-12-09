@@ -21,7 +21,7 @@ class ChainNode {
         eastNode: null
     }
     _isFilled: boolean = false;
-    _filledWith: number;
+    _filledWith: number = NaN;
 
     constructor(index: Point, nodeArray: Array<number> ) {
         this._index = index;
@@ -49,13 +49,19 @@ class ChainNode {
         return this._isFilled;
     }
 
-    fill() : void {
-        this._isFilled = true;
-        //this.filledWith_ = id;
+    release() : void {
+        this._isFilled = false;
+        this._filledWith = NaN;
     }
 
-    
 
+    fillWith(item: Item) : void {
+        let nodePos: Point = this._index;
+        if(nodePos.x == item.currentPosition.x && nodePos.y == item._currentPosition.y) {
+            this._isFilled = true;
+            this._filledWith = item.id;
+        }
+    }
 
 }
 
@@ -70,22 +76,29 @@ export class Chain {
         for(let i = 0; i < itemSourcePoints.length; i++) {
             let destPoint = itemDestinationPoints[i];
             let srcPoint = itemSourcePoints[i];
-            this._items[i] = new Item(destPoint, srcPoint); 
+            this._items[i] = new Item(i,destPoint, srcPoint);
+
+            this._nodes.forEach(node => {
+                node.fillWith(this._items[i]);
+            });
         }
-        itemSourcePoints.forEach((point) => {
-            this.includePoint(point);
-        });
     }
 
-    includePoint(point: Point) :Boolean {
-        let hasPoint = false;
-        this._nodes.forEach((node) => {
-            if(node.index.x == point.x && node.index.y == point.y) {
-                    node.fill();
-                    hasPoint = true;
-                }
+    getNodeByItem (item: Item) : ChainNode {
+        return this._nodes[item._currentPosition.x];
+    }
+
+    makeStep() : void {
+        this._items.forEach(item => {
+            console.log('State: ' + item.checkItemIsReached())
+            if(!item.checkItemIsReached()) {
+                this.getNodeByItem(item).release();
+
+                item.makeStepAxisX(1);
+    
+                this.getNodeByItem(item).fillWith(item);
+            }
         });
-        return hasPoint;
     }
 
     chainLength() : number {
@@ -93,9 +106,12 @@ export class Chain {
     }
 
     printChain() : void {
+        // this._nodes.forEach(node => {
+        //     console.log('Index: ' + JSON.stringify(node._index));
+        // });
         let chainStr : String = '';
         let chainLength = this.chainLength();
-        console.log('len: ' + chainLength);
+        //console.log('len: ' + chainLength);
         for(let i = 0; i < chainLength; i++) {
             if (this._nodes[i].isFilled) {
                 chainStr += '[0]';
@@ -108,7 +124,6 @@ export class Chain {
         }
         console.log('CHAIN: \n' + chainStr);
     }
-
 
     serializeCurrentState() {
 
