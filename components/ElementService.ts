@@ -14,7 +14,9 @@ export class Item {
         y: -1
     }
     isReached_: boolean = false;
-    constructor(destination: Point, currentPosition: Point) {
+
+    constructor(id: number, destination: Point, currentPosition: Point) {
+        this._id = id; 
         this._destination = destination;
         this._currentPosition = currentPosition;
         if (currentPosition == destination) {
@@ -30,6 +32,10 @@ export class Item {
         this._currentPosition = position;
     }
 
+    get id() : number {
+        return this._id;
+    }
+
     makeStepAxisX(step: number) {
         let newPosition = this.currentPosition;
         newPosition.x = newPosition.x + step;
@@ -40,6 +46,13 @@ export class Item {
         let newPosition = this.currentPosition;
         newPosition.y = newPosition.y + step;
         this.currentPosition = newPosition;
+    }
+
+
+    checkItemIsReached() : Boolean {
+        //console.log('Pos: ' + JSON.stringify(this._currentPosition) + '\n' +
+           //         'Dest: ' + JSON.stringify(this._destination));
+        return this._currentPosition.x == this._destination.x; 
     }
 
 }
