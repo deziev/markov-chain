@@ -6,12 +6,12 @@ export class Chain {
     _nodes: ChainNode[][];
     _items: Array<Item> = [];
 
-    constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>, demensions?: number) {
-        if(!demensions) {
-            demensions = 1;
+    constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>, rows?: number) {
+        if(!rows) {
+            rows = 1;
         }
         this._nodes = [];
-        for(let i = 0; i < demensions; i++) {
+        for(let i = 0; i < rows; i++) {
             this._nodes[i] = [];
             for(let j = 0; j < chainLayout.length; j++) {
                 this._nodes[i][j] = new ChainNode( {x: j, y: i}, chainLayout);
