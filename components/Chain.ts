@@ -3,12 +3,19 @@ import { Item } from './ElementService';
 import { ChainNode } from './NodeService';
 
 export class Chain {
-    _nodes: Array<ChainNode> = [];
+    _nodes: ChainNode[][];
     _items: Array<Item> = [];
 
-    constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point> ) {
-        for(let i = 0; i < chainLayout.length; i++) {
-            this._nodes[i] = new ChainNode( {x: i, y: 0}, chainLayout);
+    constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>, demensions?: number) {
+        if(!demensions) {
+            demensions = 1;
+        }
+        this._nodes = [];
+        for(let i = 0; i < demensions; i++) {
+            this._nodes[i] = [];
+            for(let j = 0; j < chainLayout.length; j++) {
+                this._nodes[i][j] = new ChainNode( {x: j, y: i}, chainLayout);
+            }
         }
         for(let i = 0; i < itemSourcePoints.length; i++) {
             let destPoint = itemDestinationPoints[i];
@@ -20,7 +27,7 @@ export class Chain {
     }
 
     getNodeByPosition (itemPos: Point ) : ChainNode {
-        return this._nodes[itemPos.x];
+        return this._nodes[itemPos.y][itemPos.x];
     }
 
     makeStep() : void {
@@ -29,33 +36,48 @@ export class Chain {
             if(!item.checkItemIsReached()) {
                 this.getNodeByPosition(item.currentPosition).release();
 
-                item.makeStepAxisX(1);
+                item.makeStepAxisX(-1);
     
                 this.getNodeByPosition(item.currentPosition).fillWith(item.id);
             }
         });
     }
 
-    chainLength() : number {
-        return this._nodes.length;
+    chainLength() : Object {
+        return { 
+            d1: this._nodes.length,
+            d2: this._nodes[0].length,
+        }
     }
 
     printChain() : void {
-        // this._nodes.forEach(node => {
-        //     console.log('Index: ' + JSON.stringify(node._index));
-        // });
         let chainStr : String = '';
-        let chainLength = this.chainLength();
+        let chainSize = {
+            d1: this._nodes.length,
+            d2: this._nodes[0].length,
+        };
         //console.log('len: ' + chainLength);
-        for(let i = 0; i < chainLength; i++) {
-            if (this._nodes[i].isFilled) {
-                chainStr += '[0]';
-            } else {
-                chainStr += '[-]';
+        for(let i = 0; i < chainSize.d1; i++) {
+            for(let j = 0; j < chainSize.d2; j++) {
+                if (this._nodes[i][j].isFilled) {
+                    chainStr += '[0]';
+                } else {
+                    chainStr += '[-]';
+                }
+                if(j != chainSize.d2 - 1) {
+                    chainStr += '---';
+                }
             }
-            if(i != chainLength - 1) {
-                chainStr += '---';
+            if(chainSize.d1 > 1 && i != chainSize.d1 - 1) {
+                chainStr += '\n';
+                for(let j = 0; j < chainSize.d2; j++) {
+                    chainStr += ' | ';
+                    if(j != chainSize.d2 - 1) {
+                        chainStr += '   ';
+                    }
+                }
             }
+            chainStr += '\n';
         }
         console.log('CHAIN: \n' + chainStr);
     }
