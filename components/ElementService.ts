@@ -4,30 +4,30 @@ export interface Point {
 }
 
 export class Item {
-    destination_: Point = {
+    _id: number;
+    _destination: Point = {
         x: -1,
         y: -1
     };
-    currentPosition_: Point = {
+    _currentPosition: Point = {
         x: -1,
         y: -1
     }
     isReached_: boolean = false;
-
     constructor(destination: Point, currentPosition: Point) {
-        this.destination_ = destination;
-        this.currentPosition_ = currentPosition;
+        this._destination = destination;
+        this._currentPosition = currentPosition;
         if (currentPosition == destination) {
             this.isReached_ = true;
         }
     }
 
     get currentPosition() : Point {
-        return this.currentPosition_;
+        return this._currentPosition;
     }
 
     set currentPosition(position: Point) {
-        this.currentPosition_ = position;
+        this._currentPosition = position;
     }
 
     makeStepAxisX(step: number) {

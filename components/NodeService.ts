@@ -60,17 +60,17 @@ class ChainNode {
 }
 
 export class Chain {
-    nodes_: Array<ChainNode> = [];
-    items_: Array<Item> = [];
+    _nodes: Array<ChainNode> = [];
+    _items: Array<Item> = [];
 
     constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point> ) {
         for(let i = 0; i < chainLayout.length; i++) {
-            this.nodes_[i] = new ChainNode( {x: i, y: 0}, chainLayout);
+            this._nodes[i] = new ChainNode( {x: i, y: 0}, chainLayout);
         }
         for(let i = 0; i < itemSourcePoints.length; i++) {
             let destPoint = itemDestinationPoints[i];
             let srcPoint = itemSourcePoints[i];
-            this.items_[i] = new Item(destPoint, srcPoint); 
+            this._items[i] = new Item(destPoint, srcPoint); 
         }
         itemSourcePoints.forEach((point) => {
             this.includePoint(point);
@@ -79,7 +79,7 @@ export class Chain {
 
     includePoint(point: Point) :Boolean {
         let hasPoint = false;
-        this.nodes_.forEach((node) => {
+        this._nodes.forEach((node) => {
             if(node.index.x == point.x && node.index.y == point.y) {
                     node.fill();
                     hasPoint = true;
@@ -89,7 +89,7 @@ export class Chain {
     }
 
     chainLength() : number {
-        return this.nodes_.length;
+        return this._nodes.length;
     }
 
     printChain() : void {
@@ -97,7 +97,7 @@ export class Chain {
         let chainLength = this.chainLength();
         console.log('len: ' + chainLength);
         for(let i = 0; i < chainLength; i++) {
-            if (this.nodes_[i].isFilled) {
+            if (this._nodes[i].isFilled) {
                 chainStr += '[0]';
             } else {
                 chainStr += '[-]';
