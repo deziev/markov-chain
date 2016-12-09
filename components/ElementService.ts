@@ -28,6 +28,10 @@ export class Item {
         return this._currentPosition;
     }
 
+    get destination() : Point {
+        return this._destination;
+    }
+
     set currentPosition(position: Point) {
         this._currentPosition = position;
     }
@@ -52,7 +56,8 @@ export class Item {
     checkItemIsReached() : Boolean {
         //console.log('Pos: ' + JSON.stringify(this._currentPosition) + '\n' +
            //         'Dest: ' + JSON.stringify(this._destination));
-        return this._currentPosition.x == this._destination.x; 
+        return this._currentPosition.x == this._destination.x &&
+               this._currentPosition.y == this._destination.y; 
     }
 
 }

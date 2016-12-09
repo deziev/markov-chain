@@ -33,15 +33,38 @@ export class Chain {
     makeStep() : void {
         this._items.forEach(item => {
             console.log('State: ' + item.checkItemIsReached())
+            console.log('Pos: ' + JSON.stringify(item.currentPosition));
             if(!item.checkItemIsReached()) {
                 this.getNodeByPosition(item.currentPosition).release();
 
-                item.makeStepAxisX(-1);
+                item.makeStepAxisY(1);
     
                 this.getNodeByPosition(item.currentPosition).fillWith(item.id);
             }
         });
     }
+
+    breadthFirstSearch(item: Item) {
+        let nodeQueue: Array<Point> = [];
+        let visitedNodes: Array<Point> = [];
+        let destinationPoint: Point = item.destination;
+
+        nodeQueue.push(item.currentPosition);
+
+        //loop
+        let nodePosition = nodeQueue.pop();
+        visitedNodes.push(nodePosition);
+        if(nodePosition != destinationPoint) {
+            let node = this.getNodeByPosition(nodePosition);
+            // get all chield nodes
+            node._relatedNodes
+            
+        }
+        //end loop
+    }
+
+
+
 
     chainLength() : Object {
         return { 
