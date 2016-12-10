@@ -7,6 +7,11 @@ export class Chain {
     _items: Array<Item> = [];
 
     constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>, rows?: number) {
+        this.initNodes(chainLayout, rows);
+        this.initItems(itemDestinationPoints, itemSourcePoints);
+    }
+
+    initNodes(chainLayout: Array<number>, rows?: number) : void {
         if(!rows) {
             rows = 1;
         }
@@ -14,17 +19,19 @@ export class Chain {
         for(let i = 0; i < rows; i++) {
             this._nodes[i] = [];
             for(let j = 0; j < chainLayout.length; j++) {
-                this._nodes[i][j] = new ChainNode( 
-                    {
-                        "x": j, 
-                        "y": i
-                    }, 
-                    { 
-                        "d1": rows,
-                        "d2": chainLayout.length 
-                    });
-                }
+                this._nodes[i][j] = new ChainNode({
+                    x: j, 
+                    y: i
+                }, 
+                { 
+                    rows: rows,
+                    cols: chainLayout.length 
+                });
+            }
         }
+    }
+
+    initItems(itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>) : void {
         for(let i = 0; i < itemSourcePoints.length; i++) {
             let destPoint = itemDestinationPoints[i];
             let srcPoint = itemSourcePoints[i];
@@ -40,19 +47,21 @@ export class Chain {
 
     makeStep() : void {
         this._items.forEach(item => {
-            console.log('State: ' + item.checkItemIsReached())
-            console.log('Pos: ' + JSON.stringify(item.currentPosition));
+            //console.log('State: ' + item.checkItemIsReached())
+            //console.log('Pos: ' + JSON.stringify(item.currentPosition));
             if(!item.checkItemIsReached()) {
+                this.breadthFirstSearch(item);
                 this.getNodeByPosition(item.currentPosition).release();
 
-                item.makeStepAxisY(1);
+                item.makeStepAxisY(0);
     
                 this.getNodeByPosition(item.currentPosition).fillWith(item.id);
+                
             }
         });
     }
 
-    breadthFirstSearch(item: Item) {
+    breadthFirstSearch(item: Item) : void {
         let nodeQueue: Array<Point> = [];
         let visitedNodes: Array<Point> = [];
         let destinationPoint: Point = item.destination;
@@ -60,14 +69,36 @@ export class Chain {
         nodeQueue.push(item.currentPosition);
 
         //loop
-        let nodePosition = nodeQueue.pop();
-        visitedNodes.push(nodePosition);
-        if(nodePosition != destinationPoint) {
-            let node = this.getNodeByPosition(nodePosition);
-            // get all chield nodes
-            node._relatedNodes
+        for( let i = 0; i < 4; i++) {
+            console.log('BFS: ' + JSON.stringify(nodeQueue));
+            let nodePosition = nodeQueue.shift();
+            visitedNodes.push(nodePosition);
+            if(nodePosition != destinationPoint) {
+                let node = this.getNodeByPosition(nodePosition);
+                // get all chield nodes
+                for(let prop in node.relations) {
+                    let relatedNode = node.relations[prop];
+                    if(relatedNode.length) {
+                        
+                        let relatedNodePosition : Point = {x: relatedNode[1], y: relatedNode[0] };
+                        let isVisited = false;
+                        visitedNodes.forEach(point => {
+                            if(point.x == relatedNodePosition.x && point.y == relatedNodePosition.y) {
+                                isVisited = true;
+                            }         
+                        });
+                        //console.log('visited: ' + JSON.stringify(visitedNodes) + '\nbool: ' + isVisited);
+                        if(!isVisited) {
+                            nodeQueue.push(relatedNodePosition);
+                        }
+                    }
+                }
 
+            } else {
+                console.log('Found!')
+            }
         }
+        
         //end loop
     }
 
@@ -90,6 +121,7 @@ export class Chain {
         //console.log('len: ' + chainLength);
         for(let i = 0; i < chainSize.d1; i++) {
             for(let j = 0; j < chainSize.d2; j++) {
+                //console.log('Node ' + JSON.stringify(this._nodes[i][j]._relatedNodes));
                 if (this._nodes[i][j].isFilled) {
                     chainStr += '[0]';
                 } else {
@@ -126,11 +158,11 @@ export class Chain {
         {
             "id": [0,0],
             "isFilled": false,
-            "filledWith": null,
+            "filledWith": NaN,
             "relatedNodes":  {
-                northNode: null,
-                southNode: null,
-                westNode: null,
+                northNode: [],
+                southNode: [],
+                westNode: [],
                 eastNode: [0,1]
             }       
         },
@@ -139,8 +171,8 @@ export class Chain {
             "isFilled": true,
             "filledWith": 0,
             "relatedNodes":  {
-                northNode: null,
-                southNode: null,
+                northNode: [],
+                southNode: [],
                 westNode: [0,0],
                 eastNode: [0,2]
             }
@@ -148,12 +180,12 @@ export class Chain {
         {
             "id": [0,2],
             "isFilled": false,
-            "filledWith": null,
+            "filledWith": NaN,
             "relatedNodes":  {
-                northNode: null,
-                southNode: null,
+                northNode: [],
+                southNode: [],
                 westNode: [0,1],
-                eastNode: null
+                eastNode: []
             }
         }
     ]

@@ -3,6 +3,22 @@ export interface Point {
     y?: number;
 }
 
+
+// class Point  implements IPoint{
+//     private _x: number;
+//     private _y: number;
+
+//     constructor(x: number, y: number) {
+//         this._x = x;
+//         this._y = y;
+//     }
+
+//     equalTo(b: Point) : Boolean {
+//         return this._x == b._x && this._y == b._y;
+//     }
+// }
+
+
 export class Item {
     _id: number;
     _destination: Point = {
