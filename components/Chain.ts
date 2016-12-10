@@ -58,11 +58,9 @@ export class Chain {
         this._items.forEach(item => {
             if(!item.checkItemIsReached()) {
 
+                this.getNodeByPosition(item.currentPosition).release();
                 let nextNodePosition = this.breadthFirstSearch(item);
                 let nextXY = this.calcNextStep(item.currentPosition, nextNodePosition);
-
-                this.getNodeByPosition(item.currentPosition).release();
-
                 item.makeStepAxisX(nextXY[0]);
                 item.makeStepAxisY(nextXY[1]);
     
@@ -95,8 +93,8 @@ export class Chain {
         nodeQueue.push(currentPosition);
         //loop
         while(nodeQueue.length) {
-            console.log('\nBFS: ' + JSON.stringify(nodeQueue));
-            console.log('visited: ' + JSON.stringify(visitedNodes)); 
+            //console.log('\nBFS: ' + JSON.stringify(nodeQueue));
+            //console.log('visited: ' + JSON.stringify(visitedNodes)); 
             let nodePosition = nodeQueue.shift();
 
             visitedNodes.push(nodePosition);
@@ -106,7 +104,7 @@ export class Chain {
   
                 for(let prop in node.relations) {
                     let relatedNode = node.relations[prop];
-                    if(relatedNode) {
+                    if(relatedNode && !this.getNodeByPosition(relatedNode).isFilled) {
                         
                         let isVisited = 
                         visitedNodes.some((point) : boolean => {
@@ -131,6 +129,9 @@ export class Chain {
                 break;
             }
         }
+        if(!nextStep) {
+            nextStep = item.currentPosition;
+        }
 
         return nextStep;
     }
@@ -140,7 +141,7 @@ export class Chain {
         let prevNode = null;
         for(let prop in node.relations) {
             let relatedNode = node.relations[prop];
-            if(relatedNode) {
+            if(relatedNode && !this.getNodeByPosition(relatedNode).isFilled) {
                 visitedNodes.forEach(point => {
                     if(point.equalTo(relatedNode)) {
                         prevNode = new Point(point.x, point.y)
@@ -172,7 +173,7 @@ export class Chain {
             for(let j = 0; j < chainSize.d2; j++) {
                 //console.log('Node ' + JSON.stringify(this._nodes[i][j]._relatedNodes));
                 if (this._nodes[i][j].isFilled) {
-                    chainStr += '[0]';
+                    chainStr += '[' + this._nodes[i][j].filledWith +']';
                 } else {
                     chainStr += '[-]';
                 }

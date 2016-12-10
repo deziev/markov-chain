@@ -66,6 +66,10 @@ export class ChainNode {
         return this._isFilled;
     }
 
+    get filledWith() : number {
+        return this._filledWith;
+    }
+
     release() : void {
         this._isFilled = false;
         this._filledWith = NaN;
