@@ -1,10 +1,11 @@
+import { IPoint } from './ElementService';
 import { Point } from './ElementService';
 
 interface RelatedNodes {
-    northNode: Array<number>;
-    southNode: Array<number>;
-    westNode: Array<number>;
-    eastNode: Array<number>;
+    northNode: IPoint;
+    southNode: IPoint;
+    westNode: IPoint;
+    eastNode: IPoint;
 }
 
 interface ChainSize {
@@ -14,51 +15,40 @@ interface ChainSize {
 
 
 export class ChainNode {
-    _index: Point = {
-        x: -1,
-        y: -1
-    };
+    _index: Point;
     _relatedNodes: RelatedNodes = {
-        northNode: [],
-        southNode: [],
-        westNode: [],
-        eastNode: []
+        northNode: null,
+        southNode: null,
+        westNode: null,
+        eastNode: null
     }
     _isFilled: boolean = false;
     _filledWith: number = NaN;
 
-    constructor(index: Point, chainSize: ChainSize) {
-        this._index = index;
+    constructor(index: IPoint, chainSize: ChainSize) {
+        this._index = new Point(index.x, index.y);
         // TODO: fix govnocod 
         if(index.x == 0) {
-            this._relatedNodes.eastNode[1] = index.x + 1; 
-            this._relatedNodes.eastNode[0] = index.y; 
+            this._relatedNodes.eastNode = new Point(index.x + 1, index.y);
         }
         if(index.x > 0 && index.x < chainSize.cols - 1) {
-            this._relatedNodes.westNode[1] = index.x - 1;
-            this._relatedNodes.westNode[0] = index.y;
-            this._relatedNodes.eastNode[1] = index.x + 1;
-            this._relatedNodes.eastNode[0] = index.y;
+            this._relatedNodes.westNode = new Point(index.x - 1, index.y);
+            this._relatedNodes.eastNode = new Point(index.x + 1, index.y);
         }
         if(index.x == chainSize.cols - 1) {
-            this._relatedNodes.westNode[1] = index.x - 1;
-            this._relatedNodes.westNode[0] = index.y;
+            this._relatedNodes.westNode = new Point(index.x - 1, index.y);
         }
 
         if(chainSize.rows > 1) {
             if(index.y == 0) {
-                this._relatedNodes.southNode[0] = index.y + 1;
-                this._relatedNodes.southNode[1] = index.x;
+                this._relatedNodes.southNode = new Point(index.x, index.y + 1);
             }
             if(index.y > 0 && index.y < chainSize.rows - 1) {
-                this._relatedNodes.northNode[0] = index.y - 1;
-                this._relatedNodes.northNode[1] = index.x;
-                this._relatedNodes.southNode[0] = index.y + 1;
-                this._relatedNodes.southNode[1] = index.x;
+                this._relatedNodes.northNode = new Point(index.x, index.y - 1);
+                this._relatedNodes.southNode = new Point(index.x, index.y + 1);
             }
             if(index.y == chainSize.rows - 1) {
-                this._relatedNodes.northNode[0] = index.y - 1;
-                this._relatedNodes.northNode[1] = index.x;
+                this._relatedNodes.northNode = new Point(index.x, index.y - 1);
             }
         }
 
@@ -72,7 +62,7 @@ export class ChainNode {
         return this._index;
     }
 
-    get isFilled() : Boolean {
+    get isFilled() : boolean {
         return this._isFilled;
     }
 

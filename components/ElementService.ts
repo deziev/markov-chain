@@ -1,42 +1,37 @@
-export interface Point {
+export interface IPoint {
     x: number;
     y?: number;
+    //equalTo(b: IPoint) : boolean;
 }
 
 
-// class Point  implements IPoint{
-//     private _x: number;
-//     private _y: number;
+export class Point  implements IPoint{
+    x: number;
+    y: number;
 
-//     constructor(x: number, y: number) {
-//         this._x = x;
-//         this._y = y;
-//     }
+    constructor(x_: number, y_: number) {
+        this.x = x_;
+        this.y = y_;
+    }
 
-//     equalTo(b: Point) : Boolean {
-//         return this._x == b._x && this._y == b._y;
-//     }
-// }
+    equalTo(b: IPoint) : boolean {
+        return this.x == b.x && this.y == b.y;
+    }
+}
 
 
 export class Item {
     _id: number;
-    _destination: Point = {
-        x: -1,
-        y: -1
-    };
-    _currentPosition: Point = {
-        x: -1,
-        y: -1
-    }
-    isReached_: boolean = false;
+    _destination: Point;
+    _currentPosition: Point;
+    _isReached: boolean = false;
 
-    constructor(id: number, destination: Point, currentPosition: Point) {
+    constructor(id: number, destination: IPoint, currentPosition: IPoint) {
         this._id = id; 
-        this._destination = destination;
-        this._currentPosition = currentPosition;
-        if (currentPosition == destination) {
-            this.isReached_ = true;
+        this._destination = new Point(destination.x, destination.y);
+        this._currentPosition = new Point(currentPosition.x, currentPosition.y);
+        if (this._currentPosition.equalTo(this._destination)) {
+            this._isReached = true;
         }
     }
 
@@ -56,6 +51,14 @@ export class Item {
         return this._id;
     }
 
+    set isReached(state: boolean) {
+        this._isReached = state;
+    }
+
+    get isReached() : boolean {
+        return this._isReached;
+    }
+
     makeStepAxisX(step: number) {
         let newPosition = this.currentPosition;
         newPosition.x = newPosition.x + step;
@@ -69,11 +72,8 @@ export class Item {
     }
 
 
-    checkItemIsReached() : Boolean {
-        //console.log('Pos: ' + JSON.stringify(this._currentPosition) + '\n' +
-           //         'Dest: ' + JSON.stringify(this._destination));
-        return this._currentPosition.x == this._destination.x &&
-               this._currentPosition.y == this._destination.y; 
+    checkItemIsReached() : boolean {
+        return this._currentPosition.equalTo(this._destination); 
     }
 
 }

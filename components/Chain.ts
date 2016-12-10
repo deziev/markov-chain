@@ -1,4 +1,5 @@
 import { Point } from './ElementService';
+import { IPoint } from './ElementService';
 import { Item } from './ElementService';
 import { ChainNode } from './NodeService';
 
@@ -6,7 +7,7 @@ export class Chain {
     _nodes: ChainNode[][];
     _items: Array<Item> = [];
 
-    constructor(chainLayout: Array<number>, itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>, rows?: number) {
+    constructor(chainLayout: Array<number>, itemDestinationPoints: Array<IPoint>, itemSourcePoints: Array<IPoint>, rows?: number) {
         this.initNodes(chainLayout, rows);
         this.initItems(itemDestinationPoints, itemSourcePoints);
     }
@@ -31,75 +32,123 @@ export class Chain {
         }
     }
 
-    initItems(itemDestinationPoints: Array<Point>, itemSourcePoints: Array<Point>) : void {
+    initItems(itemDestinationPoints: Array<IPoint>, itemSourcePoints: Array<IPoint>) : void {
         for(let i = 0; i < itemSourcePoints.length; i++) {
             let destPoint = itemDestinationPoints[i];
             let srcPoint = itemSourcePoints[i];
             this._items[i] = new Item(i,destPoint, srcPoint);
-
             this.getNodeByPosition(itemSourcePoints[i]).fillWith(this._items[i].id);
         }
     }
 
-    getNodeByPosition (itemPos: Point ) : ChainNode {
+    getNodeByPosition (itemPos: IPoint ) : ChainNode {
         return this._nodes[itemPos.y][itemPos.x];
+    }
+
+    checkIsItemsReached() : boolean {
+        for(let i = 0; i < this._items.length; i++) {
+            if(!this._items[i].isReached) {
+                return false;
+            }
+        }
+        return true;
     }
 
     makeStep() : void {
         this._items.forEach(item => {
-            //console.log('State: ' + item.checkItemIsReached())
-            //console.log('Pos: ' + JSON.stringify(item.currentPosition));
             if(!item.checkItemIsReached()) {
-                this.breadthFirstSearch(item);
+
+                let nextNodePosition = this.breadthFirstSearch(item);
+                let nextXY = this.calcNextStep(item.currentPosition, nextNodePosition);
+
                 this.getNodeByPosition(item.currentPosition).release();
 
-                item.makeStepAxisY(0);
+                item.makeStepAxisX(nextXY[0]);
+                item.makeStepAxisY(nextXY[1]);
     
                 this.getNodeByPosition(item.currentPosition).fillWith(item.id);
                 
+            } else {
+                item.isReached = true;
             }
         });
     }
 
-    breadthFirstSearch(item: Item) : void {
+
+    calcNextStep(currentPosition: Point , nextNode: Point) : Array<number> {
+        let diffArray: Array<number> = [];
+        diffArray[0] = nextNode.x - currentPosition.x;
+        diffArray[1] = nextNode.y - currentPosition.y;
+        return diffArray;
+    }
+
+
+    breadthFirstSearch(item: Item) : Point {
         let nodeQueue: Array<Point> = [];
         let visitedNodes: Array<Point> = [];
-        let destinationPoint: Point = item.destination;
+        let nextStep: Point = null;
+        // actually search is reversed, form dest to curr
+        // last visited node will be our next step
+        let destination = new Point(item.currentPosition.x, item.currentPosition.y);
+        let currentPosition = new Point(item.destination.x, item.destination.y);
 
-        nodeQueue.push(item.currentPosition);
-
+        nodeQueue.push(currentPosition);
         //loop
-        for( let i = 0; i < 4; i++) {
-            console.log('BFS: ' + JSON.stringify(nodeQueue));
+        while(nodeQueue.length) {
+            console.log('\nBFS: ' + JSON.stringify(nodeQueue));
+            console.log('visited: ' + JSON.stringify(visitedNodes)); 
             let nodePosition = nodeQueue.shift();
+
             visitedNodes.push(nodePosition);
-            if(nodePosition != destinationPoint) {
+            if(!nodePosition.equalTo(destination)) {
+                //console.log('curr: ' + nodePosition.x + ', ' + nodePosition.y);
                 let node = this.getNodeByPosition(nodePosition);
-                // get all chield nodes
+  
                 for(let prop in node.relations) {
                     let relatedNode = node.relations[prop];
-                    if(relatedNode.length) {
+                    if(relatedNode) {
                         
-                        let relatedNodePosition : Point = {x: relatedNode[1], y: relatedNode[0] };
-                        let isVisited = false;
-                        visitedNodes.forEach(point => {
-                            if(point.x == relatedNodePosition.x && point.y == relatedNodePosition.y) {
-                                isVisited = true;
-                            }         
+                        let isVisited = 
+                        visitedNodes.some((point) : boolean => {
+                            return point.equalTo(relatedNode)  
                         });
-                        //console.log('visited: ' + JSON.stringify(visitedNodes) + '\nbool: ' + isVisited);
-                        if(!isVisited) {
-                            nodeQueue.push(relatedNodePosition);
+                        let alreadyInQueue = 
+                        nodeQueue.some((point) : boolean => {
+                                return point.equalTo(relatedNode);
+                        });
+
+                        if(!isVisited && !alreadyInQueue) {
+                            nodeQueue.push(relatedNode);
                         }
                     }
                 }
 
             } else {
-                console.log('Found!')
+                
+                //console.log('Found!');
+                nextStep = this.getPrevNode(visitedNodes, nodePosition);
+                //console.log('visited: ' + JSON.stringify(visitedNodes)); 
+                break;
             }
         }
-        
-        //end loop
+
+        return nextStep;
+    }
+
+    getPrevNode(visitedNodes: Array<Point>, destination: Point) : Point {
+        let node = this.getNodeByPosition(destination);
+        let prevNode = null;
+        for(let prop in node.relations) {
+            let relatedNode = node.relations[prop];
+            if(relatedNode) {
+                visitedNodes.forEach(point => {
+                    if(point.equalTo(relatedNode)) {
+                        prevNode = new Point(point.x, point.y)
+                    }
+                });
+            }
+        }
+        return prevNode;
     }
 
 
@@ -145,8 +194,15 @@ export class Chain {
         console.log('CHAIN: \n' + chainStr);
     }
 
-    serializeCurrentState() {
+    // serializeCurrentState() {
 
+    // }
+
+    run() {
+        while(!this.checkIsItemsReached()) {
+            this.printChain();
+            this.makeStep();
+        }
     }
 
 }
