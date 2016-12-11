@@ -1,5 +1,5 @@
-import { IPoint } from './ElementService';
-import { Point } from './ElementService';
+import { Point } from './primitives/Point';
+import { IPoint } from './primitives/IPoint';
 
 interface RelatedNodes {
     northNode: IPoint;

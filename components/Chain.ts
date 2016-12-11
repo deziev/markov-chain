@@ -1,11 +1,13 @@
-import { Point } from './ElementService';
-import { IPoint } from './ElementService';
+import { IPoint } from './primitives/IPoint';
+import { Point } from './primitives/Point';
 import { Item } from './ElementService';
 import { ChainNode } from './NodeService';
+
 
 export class Chain {
     _nodes: ChainNode[][];
     _items: Array<Item> = [];
+    _stepCounter: number = 0;
 
     constructor(chainLayout: Array<number>, itemDestinationPoints: Array<IPoint>, itemSourcePoints: Array<IPoint>, rows?: number) {
         this.initNodes(chainLayout, rows);
@@ -55,15 +57,16 @@ export class Chain {
     }
 
     makeStep() : void {
-        this._items.forEach(item => {
+        this._items.forEach((item, index) => {
             if(!item.checkItemIsReached()) {
 
                 this.getNodeByPosition(item.currentPosition).release();
                 let nextNodePosition = this.breadthFirstSearch(item);
+
                 let nextXY = this.calcNextStep(item.currentPosition, nextNodePosition);
-                item.makeStepAxisX(nextXY[0]);
-                item.makeStepAxisY(nextXY[1]);
-    
+
+                item.changePosition(nextXY);
+
                 this.getNodeByPosition(item.currentPosition).fillWith(item.id);
                 
             } else {
@@ -72,12 +75,30 @@ export class Chain {
         });
     }
 
+    makeStepByItem(index: number) : void {
+        let item = this._items[index];
+        if(!item.checkItemIsReached()) {
 
-    calcNextStep(currentPosition: Point , nextNode: Point) : Array<number> {
-        let diffArray: Array<number> = [];
-        diffArray[0] = nextNode.x - currentPosition.x;
-        diffArray[1] = nextNode.y - currentPosition.y;
-        return diffArray;
+            this.getNodeByPosition(item.currentPosition).release();
+            let nextNodePosition = this.breadthFirstSearch(item);
+
+            let nextXY = this.calcNextStep(item.currentPosition, nextNodePosition);
+
+            item.changePosition(nextXY);
+
+            this.getNodeByPosition(item.currentPosition).fillWith(item.id);
+            
+        } else {
+            item.isReached = true;
+        }
+    }
+
+    calcNextStep(currentPosition: Point , nextNode: Point) : IPoint {
+        let diffXY: IPoint = {
+            x: nextNode.x - currentPosition.x,
+            y: nextNode.y - currentPosition.y
+        };
+        return diffXY;
     }
 
 
@@ -164,6 +185,8 @@ export class Chain {
 
     printChain() : void {
         let chainStr : String = '';
+        console.log('STEP: ' + this._stepCounter);
+        
         let chainSize = {
             d1: this._nodes.length,
             d2: this._nodes[0].length,
@@ -195,14 +218,32 @@ export class Chain {
         console.log('CHAIN: \n' + chainStr);
     }
 
+    printStats() : void {
+        console.log('Stats:');
+        var stepSum: number = 0;
+        this._items.forEach(item => {
+            stepSum += item.stepCount;   
+        });
+        let avgStep = stepSum / this._items.length;
+        console.log('AVG: ' + avgStep);   
+        console.log('Steps: ' + this._stepCounter);  
+    }
+
     // serializeCurrentState() {
 
     // }
 
     run() {
+        this.printChain();
+        let itemPerStep = 1;
         while(!this.checkIsItemsReached()) {
-            this.printChain();
-            this.makeStep();
+            for(let index = 0; index < this._items.length; index++) {
+                this.makeStepByItem(index);
+                if( (index + 1) % itemPerStep == 0 && !this._items[index].isReached) {
+                    this._stepCounter++;
+                    this.printChain();
+                }
+            }
         }
     }
 

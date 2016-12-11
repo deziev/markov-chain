@@ -1,30 +1,12 @@
-export interface IPoint {
-    x: number;
-    y?: number;
-    //equalTo(b: IPoint) : boolean;
-}
-
-
-export class Point  implements IPoint{
-    x: number;
-    y: number;
-
-    constructor(x_: number, y_: number) {
-        this.x = x_;
-        this.y = y_;
-    }
-
-    equalTo(b: IPoint) : boolean {
-        return this.x == b.x && this.y == b.y;
-    }
-}
-
+import { Point } from './primitives/Point';
+import { IPoint } from './primitives/IPoint';
 
 export class Item {
     _id: number;
     _destination: Point;
     _currentPosition: Point;
     _isReached: boolean = false;
+    _stepCounter: number = 0;
 
     constructor(id: number, destination: IPoint, currentPosition: IPoint) {
         this._id = id; 
@@ -35,7 +17,32 @@ export class Item {
         }
     }
 
-    get currentPosition() : Point {
+    changePosition(point: IPoint) : void {
+        this.makeStepAxisX(point.x);
+        this.makeStepAxisY(point.y);
+        if(point.x > 0 || point.y > 0) {
+            this._stepCounter++;
+        }
+    }
+
+    makeStepAxisX(step: number) {
+        let newPosition = this.currentPosition;
+        newPosition.x = newPosition.x + step;
+        this.currentPosition = newPosition;
+    }
+
+    makeStepAxisY(step: number) {
+        let newPosition = this.currentPosition;
+        newPosition.y = newPosition.y + step;
+        this.currentPosition = newPosition;
+    }
+
+
+    checkItemIsReached() : boolean {
+        return this._currentPosition.equalTo(this._destination); 
+    }
+
+     get currentPosition() : Point {
         return this._currentPosition;
     }
 
@@ -59,21 +66,7 @@ export class Item {
         return this._isReached;
     }
 
-    makeStepAxisX(step: number) {
-        let newPosition = this.currentPosition;
-        newPosition.x = newPosition.x + step;
-        this.currentPosition = newPosition;
+    get stepCount() : number {
+        return this._stepCounter;
     }
-
-    makeStepAxisY(step: number) {
-        let newPosition = this.currentPosition;
-        newPosition.y = newPosition.y + step;
-        this.currentPosition = newPosition;
-    }
-
-
-    checkItemIsReached() : boolean {
-        return this._currentPosition.equalTo(this._destination); 
-    }
-
 }
