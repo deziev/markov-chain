@@ -128,10 +128,10 @@ export class Chain {
 
             visitedNodes.push(nodePosition);
             if(!nodePosition.equalTo(destination)) {
-                console.log('curr: ' + nodePosition.x + ', ' + nodePosition.y);
+                //console.log('curr: ' + nodePosition.x + ', ' + nodePosition.y);
                 let node = this.getNodeByPosition(nodePosition);
 
-                console.log('Rels: ' + JSON.stringify(node.relations));
+                //console.log('Rels: ' + JSON.stringify(node.relations));
                 
                 for(let prop in node.relations) {
                     let relatedNode = node.relations[prop];

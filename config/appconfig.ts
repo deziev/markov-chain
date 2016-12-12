@@ -1,7 +1,7 @@
 const config = {
-    "itemPerStep": null,
-    "verticalLoop": true,
-    "horizontalLoop": true,
+    "itemPerStep": 2,
+    "verticalLoop": false,
+    "horizontalLoop": false,
     "colorDiff": false,
     "movement": "BFS"
  }
