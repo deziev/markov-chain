@@ -3,6 +3,7 @@ import { Point } from './primitives/Point';
 import { Item } from './ElementService';
 import { ChainNode } from './NodeService';
 
+import appconfig from '../config/appconfig';
 
 export class Chain {
     _nodes: ChainNode[][];
@@ -80,7 +81,14 @@ export class Chain {
         if(!item.checkItemIsReached()) {
 
             this.getNodeByPosition(item.currentPosition).release();
-            let nextNodePosition = this.randomStep(item);
+            let nextNodePosition: Point = null;
+
+            if(appconfig.movement == 'BFS') {
+                nextNodePosition = this.breadthFirstSearch(item);
+            } else if (appconfig.movement == 'random') {
+                nextNodePosition = this.randomStep(item);
+            }
+            
 
             let nextXY = this.calcNextStep(item.currentPosition, nextNodePosition);
 
@@ -120,16 +128,18 @@ export class Chain {
 
             visitedNodes.push(nodePosition);
             if(!nodePosition.equalTo(destination)) {
-                //console.log('curr: ' + nodePosition.x + ', ' + nodePosition.y);
+                console.log('curr: ' + nodePosition.x + ', ' + nodePosition.y);
                 let node = this.getNodeByPosition(nodePosition);
-  
+
+                console.log('Rels: ' + JSON.stringify(node.relations));
+                
                 for(let prop in node.relations) {
                     let relatedNode = node.relations[prop];
                     if(relatedNode && !this.getNodeByPosition(relatedNode).isFilled) {
                         
                         let isVisited = 
                         visitedNodes.some((point) : boolean => {
-                            return point.equalTo(relatedNode)  
+                            return point.equalTo(relatedNode);  
                         });
                         let alreadyInQueue = 
                         nodeQueue.some((point) : boolean => {
@@ -207,21 +217,28 @@ export class Chain {
             d1: this._nodes.length,
             d2: this._nodes[0].length,
         };
-        //console.log('len: ' + chainLength);
+
         for(let i = 0; i < chainSize.d1; i++) {
             for(let j = 0; j < chainSize.d2; j++) {
-                //console.log('Node ' + JSON.stringify(this._nodes[i][j]._relatedNodes));
+                if (appconfig.horizontalLoop && !j) {
+                    chainStr += '---';
+                }
                 if (this._nodes[i][j].isFilled) {
                     chainStr += '[' + this._nodes[i][j].filledWith +']';
                 } else {
                     chainStr += '[-]';
                 }
-                if(j != chainSize.d2 - 1) {
+                if (j != chainSize.d2 - 1) {
+                    chainStr += '---';
+                } else if (appconfig.horizontalLoop) {
                     chainStr += '---';
                 }
             }
-            if(chainSize.d1 > 1 && i != chainSize.d1 - 1) {
+            if (chainSize.d1 > 1 && i != chainSize.d1 - 1 || appconfig.verticalLoop) {
                 chainStr += '\n';
+                if (appconfig.horizontalLoop) {
+                    chainStr += '   ';
+                }   
                 for(let j = 0; j < chainSize.d2; j++) {
                     chainStr += ' | ';
                     if(j != chainSize.d2 - 1) {
@@ -253,7 +270,7 @@ export class Chain {
 
     run() {
         this.printChain();
-        let itemPerStep = 1;
+        let itemPerStep = appconfig.itemPerStep || this._items.length;
         while(!this.checkIsItemsReached()) {
             for(let index = 0; index < this._items.length; index++) {
                 this.makeStepByItem(index);
