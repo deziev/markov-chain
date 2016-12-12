@@ -20,9 +20,8 @@ export class Item {
     changePosition(point: IPoint) : void {
         this.makeStepAxisX(point.x);
         this.makeStepAxisY(point.y);
-        if(point.x > 0 || point.y > 0) {
-            this._stepCounter++;
-        }
+        this._stepCounter++;
+
     }
 
     makeStepAxisX(step: number) {

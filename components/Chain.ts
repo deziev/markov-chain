@@ -80,7 +80,7 @@ export class Chain {
         if(!item.checkItemIsReached()) {
 
             this.getNodeByPosition(item.currentPosition).release();
-            let nextNodePosition = this.breadthFirstSearch(item);
+            let nextNodePosition = this.randomStep(item);
 
             let nextXY = this.calcNextStep(item.currentPosition, nextNodePosition);
 
@@ -151,7 +151,7 @@ export class Chain {
             }
         }
         if(!nextStep) {
-            nextStep = item.currentPosition;
+            nextStep = this.randomStep(item) || item.currentPosition;
         }
 
         return nextStep;
@@ -171,6 +171,22 @@ export class Chain {
             }
         }
         return prevNode;
+    }
+
+    randomStep(item: Item) : Point {
+        let position = item.currentPosition;
+        let node = this.getNodeByPosition(position);
+        let relatedNodes: Array<Point> = [];
+        let pickChance: Array<number> = [];
+        for(let prop in node.relations) {
+            let relatedNode = node.relations[prop];
+            if(relatedNode && !this.getNodeByPosition(relatedNode).isFilled) {
+                relatedNodes.push(relatedNode);
+                pickChance.push(Math.random());
+            }
+        }
+        let indexOfMaxChance = pickChance.indexOf(Math.max(...pickChance)); 
+        return relatedNodes[indexOfMaxChance];
     }
 
 
@@ -221,8 +237,10 @@ export class Chain {
     printStats() : void {
         console.log('Stats:');
         var stepSum: number = 0;
-        this._items.forEach(item => {
-            stepSum += item.stepCount;   
+        this._items.forEach((item, index) => {
+            stepSum += item.stepCount; 
+            console.log('Item ' + index +' steps: '+ item.stepCount);
+              
         });
         let avgStep = stepSum / this._items.length;
         console.log('AVG: ' + avgStep);   
